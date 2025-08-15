@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Recados</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome para ícones -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- CSS customizado -->
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="bg-primary text-white py-4 mb-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h1 class="mb-0">
+                        <i class="fas fa-sticky-note me-2"></i>
+                        Sistema de Recados
+                    </h1>
+                    <p class="mb-0 opacity-75">Gerencie seus recados de forma simples e eficiente</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="row">
+            <!-- Formulário de Cadastro -->
+            <div class="col-lg-5 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
+                        <h3 class="card-title mb-0">
+                            <i class="fas fa-plus-circle me-2"></i>
+                            Novo Recado
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="formRecado">
+                            <!-- Campo: Quem deixou o recado -->
+                            <div class="mb-3">
+                                <label for="remetente" class="form-label">
+                                    <i class="fas fa-user me-1"></i>
+                                    Quem deixou o recado *
+                                </label>
+                                <input type="text" class="form-control" id="remetente" name="remetente" 
+                                       placeholder="Digite seu nome" required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Campo: Para quem é o recado -->
+                            <div class="mb-3">
+                                <label for="destinatario" class="form-label">
+                                    <i class="fas fa-user-tag me-1"></i>
+                                    Para quem é o recado *
+                                </label>
+                                <input type="text" class="form-control" id="destinatario" name="destinatario" 
+                                       placeholder="Digite o nome do destinatário" required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Campo: Texto do recado -->
+                            <div class="mb-3">
+                                <label for="mensagem" class="form-label">
+                                    <i class="fas fa-comment me-1"></i>
+                                    Mensagem do recado *
+                                </label>
+                                <textarea class="form-control" id="mensagem" name="mensagem" rows="4" 
+                                          placeholder="Digite sua mensagem aqui..." required></textarea>
+                                <div class="invalid-feedback"></div>
+                                <div class="form-text">
+                                    <span id="contadorCaracteres">0</span>/500 caracteres
+                                </div>
+                            </div>
+
+                            <!-- Botões -->
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>
+                                    Salvar Recado
+                                </button>
+                                <button type="reset" class="btn btn-outline-secondary">
+                                    <i class="fas fa-eraser me-2"></i>
+                                    Limpar Formulário
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de Recados -->
+            <div class="col-lg-7">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h3 class="card-title mb-0">
+                            <i class="fas fa-list me-2"></i>
+                            Recados Salvos
+                        </h3>
+                        <span class="badge bg-primary" id="contadorRecados">0</span>
+                    </div>
+                    <div class="card-body">
+                        <!-- Área de filtros -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-search"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="filtroRecados" 
+                                           placeholder="Buscar recados...">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <select class="form-select" id="ordenarPor">
+                                    <option value="data-desc">Mais recentes primeiro</option>
+                                    <option value="data-asc">Mais antigos primeiro</option>
+                                    <option value="remetente">Por remetente (A-Z)</option>
+                                    <option value="destinatario">Por destinatário (A-Z)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Lista de recados -->
+                        <div id="listaRecados">
+                            <!-- Mensagem quando não há recados -->
+                            <div class="text-center py-5" id="mensagemVazia">
+                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">Nenhum recado encontrado</h5>
+                                <p class="text-muted">Adicione seu primeiro recado usando o formulário ao lado.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação -->
+    <div class="modal fade" id="modalConfirmacao" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                        Confirmar Exclusão
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Tem certeza que deseja excluir este recado?</p>
+                    <p class="text-muted mb-0">Esta ação não pode ser desfeita.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirmarExclusao">
+                        <i class="fas fa-trash me-2"></i>
+                        Excluir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast para notificações -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="toastNotificacao" class="toast" role="alert">
+            <div class="toast-header">
+                <i class="fas fa-info-circle text-primary me-2"></i>
+                <strong class="me-auto">Sistema de Recados</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body"></div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Script principal -->
+    <script src="js/app.js"></script>
+    <!-- Efeitos visuais -->
+    <script src="js/efeitos.js"></script>
+</body>
+</html>
+
