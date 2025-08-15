@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime.js Dashboard - Criador de Animações</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 350px 1fr 400px;
+            grid-template-rows: auto 1fr;
+            min-height: 100vh;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #4a5568;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 1.1em;
+        }
+
+        .controls-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            max-height: calc(100vh - 140px);
+        }
+
+        .controls-panel h3 {
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .control-group input,
+        .control-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .control-group input:focus,
+        .control-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .color-input {
+            height: 50px !important;
+            cursor: pointer;
+        }
+
+        .range-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .range-group input[type="range"] {
+            flex: 1;
+        }
+
+        .range-value {
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .preview-area {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .preview-area h3 {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #4a5568;
+            margin: 0;
+        }
+
+        .animated-element {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 10px;
+            margin: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .animated-element:hover {
+            transform: scale(1.05);
+        }
+
+        .stagger-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .stagger-element {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .code-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .code-panel h3 {
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .code-output {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            overflow-x: auto;
+            flex: 1;
+            white-space: pre-wrap;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            margin: 5px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .preset-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .preset-button {
+            background: linear-gradient(45deg, #48bb78, #38a169);
+            font-size: 12px;
+            padding: 8px 12px;
+        }
+
+        .copy-button {
+            background: linear-gradient(45deg, #ed8936, #dd6b20);
+            align-self: flex-start;
+            margin-top: 15px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            transform: scale(1.2);
+        }
+
+        .stagger-controls {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto 1fr auto;
+            }
+        }
+
+        /* Animações de entrada */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Syntax highlighting */
+        .code-keyword { color: #ff79c6; }
+        .code-string { color: #8be9fd; }
+        .code-number { color: #bd93f9; }
+        .code-property { color: #50fa7b; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header fade-in">
+            <h1>🎬 Anime.js Dashboard</h1>
+            <p>Crie animações incríveis e gere código automaticamente</p>
+        </header>
+
+        <div class="controls-panel fade-in">
+            <h3>⚙️ Configurações de Animação</h3>
+            
+            <div class="preset-buttons">
+                <button class="button preset-button" onclick="loadPreset('bounce')">🎾 Bounce</button>
+                <button class="button preset-button" onclick="loadPreset('fadeIn')">✨ Fade In</button>
+                <button class="button preset-button" onclick="loadPreset('slideLeft')">⬅️ Slide Left</button>
+                <button class="button preset-button" onclick="loadPreset('rotate')">🔄 Rotate</button>
+            </div>
+
+            <div class="stagger-controls">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="staggerEnabled">
+                    <label for="staggerEnabled">🎭 Animação Sequencial (Stagger)</label>
+                </div>
+                <div class="control-group" id="staggerControls" style="display: none;">
+                    <label for="staggerDelay">Delay entre elementos (ms):</label>
+                    <div class="range-group">
+                        <input type="range" id="staggerDelay" min="0" max="500" value="100">
+                        <span class="range-value" id="staggerDelayValue">100</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for="animationType">🎯 Tipo de Animação:</label>
+                <select id="animationType">
+                    <option value="translateX">Mover Horizontalmente</option>
+                    <option value="translateY">Mover Verticalmente</option>
+                    <option value="scale">Escalar</option>
+                    <option value="rotate">Rotacionar</option>
+                    <option value="opacity">Opacidade</option>
+                    <option value="backgroundColor">Cor de Fundo</option>
+                    <option value="borderRadius">Raio da Borda</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="fromValue">📍 Valor Inicial:</label>
+                <input type="text" id="fromValue" value="0" placeholder="Valor inicial">
+            </div>
+
+            <div class="control-group">
+                <label for="toValue">🎯 Valor Final:</label>
+                <input type="text" id="toValue" value="100" placeholder="Valor final">
+            </div>
+
+            <div class="control-group">
+                <label for="duration">⏱️ Duração (ms):</label>
+                <div class="range-group">
+                    <input type="range" id="duration" min="100" max="3000" value="1000">
+                    <span class="range-value" id="durationValue">1000</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for="delay">⏳ Delay (ms):</label>
+                <div class="range-group">
+                    <input type="range" id="delay" min="0" max="2000" value="0">
+                    <span class="range-value" id="delayValue">0</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for="easing">🎢 Easing:</label>
+                <select id="easing">
+                    <option value="easeInOutQuad">Ease In Out Quad</option>
+                    <option value="easeInQuad">Ease In Quad</option>
+                    <option value="easeOutQuad">Ease Out Quad</option>
+                    <option value="easeInOutCubic">Ease In Out Cubic</option>
+                    <option value="easeInOutSine">Ease In Out Sine</option>
+                    <option value="linear">Linear</option>
+                    <option value="easeOutBounce">Bounce</option>
+                    <option value="easeOutElastic">Elastic</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="direction">🔄 Direção:</label>
+                <select id="direction">
+                    <option value="normal">Normal</option>
+                    <option value="reverse">Reversa</option>
+                    <option value="alternate">Alternada</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="loop">🔁 Repetições:</label>
+                <div class="range-group">
+                    <input type="range" id="loop" min="0" max="10" value="0">
+                    <span class="range-value" id="loopValue">0</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for="backgroundColor">🎨 Cor de Fundo:</label>
+                <input type="color" id="backgroundColor" class="color-input" value="#667eea">
+            </div>
+
+            <div class="button-group">
+                <button class="button" onclick="startAnimation()">🎬 Animar</button>
+                <button class="button" onclick="resetAnimation()">🔄 Reset</button>
+            </div>
+        </div>
+
+        <div class="preview-area fade-in">
+            <h3>🎭 Preview</h3>
+            <div class="animated-element" id="mainElement"></div>
+            <div class="stagger-container" id="staggerContainer" style="display: none;">
+                <div class="stagger-element"></div>
+                <div class="stagger-element"></div>
+                <div class="stagger-element"></div>
+                <div class="stagger-element"></div>
+                <div class="stagger-element"></div>
+            </div>
+        </div>
+
+        <div class="code-panel fade-in">
+            <h3>💻 Código Anime.js</h3>
+            <pre class="code-output" id="codeOutput">// Configure suas animações e o código aparecerá aqui
+anime({
+    targets: '.element',
+    translateX: 100,
+    duration: 1000,
+    easing: 'easeInOutQuad'
+});</pre>
+            <button class="button copy-button" onclick="copyCode()">📋 Copiar Código</button>
+        </div>
+    </div>
+
+    <script>
+        // Configuração inicial
+        let currentAnimation = null;
+        
+        // Event listeners para ranges
+        document.getElementById('duration').addEventListener('input', function() {
+            document.getElementById('durationValue').textContent = this.value;
+            updateCode();
+        });
+
+        document.getElementById('delay').addEventListener('input', function() {
+            document.getElementById('delayValue').textContent = this.value;
+            updateCode();
+        });
+
+        document.getElementById('loop').addEventListener('input', function() {
+            document.getElementById('loopValue').textContent = this.value === '0' ? 'Sem loop' : this.value;
+            updateCode();
+        });
+
+        document.getElementById('staggerDelay').addEventListener('input', function() {
+            document.getElementById('staggerDelayValue').textContent = this.value;
+            updateCode();
+        });
+
+        // Toggle stagger controls
+        document.getElementById('staggerEnabled').addEventListener('change', function() {
+            const staggerControls = document.getElementById('staggerControls');
+            const staggerContainer = document.getElementById('staggerContainer');
+            const mainElement = document.getElementById('mainElement');
+            
+            if (this.checked) {
+                staggerControls.style.display = 'block';
+                staggerContainer.style.display = 'flex';
+                mainElement.style.display = 'none';
+            } else {
+                staggerControls.style.display = 'none';
+                staggerContainer.style.display = 'none';
+                mainElement.style.display = 'block';
+            }
+            updateCode();
+        });
+
+        // Event listeners para outros controles
+        ['animationType', 'fromValue', 'toValue', 'easing', 'direction', 'backgroundColor'].forEach(id => {
+            document.getElementById(id).addEventListener('change', updateCode);
+            document.getElementById(id).addEventListener('input', updateCode);
+        });
+
+        // Função para iniciar animação
+        function startAnimation() {
+            if (currentAnimation) {
+                currentAnimation.restart();
+                return;
+            }
+
+            const config = getAnimationConfig();
+            const isStagger = document.getElementById('staggerEnabled').checked;
+            
+            if (isStagger) {
+                config.targets = '.stagger-element';
+                config.delay = anime.stagger(parseInt(document.getElementById('staggerDelay').value));
+            } else {
+                config.targets = '#mainElement';
+            }
+
+            try {
+                currentAnimation = anime(config);
+            } catch (error) {
+                console.error('Erro na animação:', error);
+                alert('Erro na configuração da animação. Verifique os valores inseridos.');
+            }
+        }
+
+        // Função para reset
+        function resetAnimation() {
+            if (currentAnimation) {
+                currentAnimation.pause();
+                currentAnimation.seek(0);
+                currentAnimation = null;
+            }
+            
+            // Reset elementos
+            anime.set('#mainElement', {
+                translateX: 0,
+                translateY: 0,
+                scale: 1,
+                rotate: 0,
+                opacity: 1,
+                backgroundColor: document.getElementById('backgroundColor').value,
+                borderRadius: '10px'
+            });
+
+            anime.set('.stagger-element', {
+                translateX: 0,
+                translateY: 0,
+                scale: 1,
+                rotate: 0,
+                opacity: 1,
+                backgroundColor: '#ff6b6b',
+                borderRadius: '8px'
+            });
+        }
+
+        // Função para obter configuração da animação
+        function getAnimationConfig() {
+            const animationType = document.getElementById('animationType').value;
+            const fromValue = document.getElementById('fromValue').value.trim();
+            const toValue = document.getElementById('toValue').value.trim();
+            const duration = parseInt(document.getElementById('duration').value);
+            const delay = parseInt(document.getElementById('delay').value);
+            const easing = document.getElementById('easing').value;
+            const direction = document.getElementById('direction').value;
+            const loop = parseInt(document.getElementById('loop').value);
+
+            const config = {
+                duration: duration,
+                easing: easing,
+                direction: direction,
+                complete: function() {
+                    console.log('Animação completa!');
+                }
+            };
+
+            // Adicionar delay se maior que 0
+            if (delay > 0) {
+                config.delay = delay;
+            }
+
+            // Adicionar loop se maior que 0
+            if (loop > 0) {
+                config.loop = loop === 1 ? true : loop;
+            }
+
+            // Configurar propriedade animada
+            if (animationType === 'backgroundColor') {
+                config[animationType] = toValue || '#667eea';
+            } else if (fromValue && fromValue !== '0' && fromValue !== '') {
+                // Verificar se é um valor numérico
+                const fromNum = parseFloat(fromValue);
+                const toNum = parseFloat(toValue);
+                
+                if (!isNaN(fromNum) && !isNaN(toNum)) {
+                    config[animationType] = [fromNum, toNum];
+                } else {
+                    config[animationType] = [fromValue, toValue];
+                }
+            } else {
+                // Verificar se é um valor numérico
+                const toNum = parseFloat(toValue);
+                if (!isNaN(toNum)) {
+                    config[animationType] = toNum;
+                } else {
+                    config[animationType] = toValue;
+                }
+            }
+
+            return config;
+        }
+
+        // Função para atualizar o código
+        function updateCode() {
+            const config = getAnimationConfig();
+            const isStagger = document.getElementById('staggerEnabled').checked;
+            
+            let targets = isStagger ? "'.stagger-element'" : "'.element'";
+            config.targets = targets;
+            
+            if (isStagger) {
+                config.delay = `anime.stagger(${document.getElementById('staggerDelay').value})`;
+            }
+
+            let codeString = 'anime({\n';
+            codeString += `    targets: ${targets},\n`;
+            
+            // Remover targets do config para não duplicar
+            delete config.targets;
+            
+            Object.keys(config).forEach(key => {
+                let value = config[key];
+                
+                if (key === 'delay' && isStagger) {
+                    codeString += `    ${key}: ${value},\n`;
+                } else if (typeof value === 'string') {
+                    if (key === 'backgroundColor' || key === 'easing' || key === 'direction') {
+                        codeString += `    ${key}: '${value}',\n`;
+                    } else {
+                        codeString += `    ${key}: '${value}',\n`;
+                    }
+                } else if (Array.isArray(value)) {
+                    codeString += `    ${key}: [${value.map(v => isNaN(v) ? `'${v}'` : v).join(', ')}],\n`;
+                } else if (typeof value === 'function') {
+                    codeString += `    ${key}: function() {\n        console.log('Animação completa!');\n    },\n`;
+                } else {
+                    codeString += `    ${key}: ${value},\n`;
+                }
+            });
+            
+            codeString = codeString.slice(0, -2); // Remove última vírgula
+            codeString += '\n});';
+
+            // Syntax highlighting básico
+            codeString = codeString
+                .replace(/(anime|targets|duration|easing|delay|loop|direction|complete)/g, '<span class="code-keyword">$1</span>')
+                .replace(/('[\w-]+')/g, '<span class="code-string">$1</span>')
+                .replace(/(\d+)/g, '<span class="code-number">$1</span>')
+                .replace(/(translateX|translateY|scale|rotate|opacity|backgroundColor|borderRadius):/g, '<span class="code-property">$1</span>:');
+
+            document.getElementById('codeOutput').innerHTML = codeString;
+        }
+
+        // Função para copiar código
+        function copyCode() {
+            const codeElement = document.getElementById('codeOutput');
+            const textContent = codeElement.textContent || codeElement.innerText;
+            
+            navigator.clipboard.writeText(textContent).then(() => {
+                const button = document.querySelector('.copy-button');
+                const originalText = button.textContent;
+                button.textContent = '✅ Copiado!';
+                button.style.background = 'linear-gradient(45deg, #48bb78, #38a169)';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = 'linear-gradient(45deg, #ed8936, #dd6b20)';
+                }, 2000);
+            });
+        }
+
+        // Presets de animação
+        function loadPreset(preset) {
+            resetAnimation();
+            
+            const presets = {
+                bounce: {
+                    animationType: 'translateY',
+                    fromValue: '0',
+                    toValue: '-50',
+                    duration: 600,
+                    easing: 'easeOutBounce',
+                    direction: 'alternate',
+                    loop: 2
+                },
+                fadeIn: {
+                    animationType: 'opacity',
+                    fromValue: '0',
+                    toValue: '1',
+                    duration: 800,
+                    easing: 'easeInOutQuad',
+                    direction: 'normal',
+                    loop: 0
+                },
+                slideLeft: {
+                    animationType: 'translateX',
+                    fromValue: '100',
+                    toValue: '0',
+                    duration: 800,
+                    easing: 'easeOutCubic',
+                    direction: 'normal',
+                    loop: 0
+                },
+                rotate: {
+                    animationType: 'rotate',
+                    fromValue: '0',
+                    toValue: '360deg',
+                    duration: 1000,
+                    easing: 'easeInOutSine',
+                    direction: 'normal',
+                    loop: 0
+                }
+            };
+
+            const config = presets[preset];
+            if (config) {
+                document.getElementById('animationType').value = config.animationType;
+                document.getElementById('fromValue').value = config.fromValue;
+                document.getElementById('toValue').value = config.toValue;
+                document.getElementById('duration').value = config.duration;
+                document.getElementById('durationValue').textContent = config.duration;
+                document.getElementById('easing').value = config.easing;
+                document.getElementById('direction').value = config.direction;
+                document.getElementById('loop').value = config.loop;
+                document.getElementById('loopValue').textContent = config.loop === 0 ? 'Sem loop' : config.loop;
+                
+                updateCode();
+            }
+        }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCode();
+            resetAnimation();
+        });
+    </script>
+</body>
+</html>
